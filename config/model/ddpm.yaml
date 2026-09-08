@@ -1,0 +1,61 @@
+vqgan_ckpt: ???
+
+# Must match the VQ-GAN latent space:
+#   diffusion_img_size      = in-plane size / downsample   (256 / 4 = 64)
+#   diffusion_num_channels  = embedding_dim                (8)
+# NOTE: `dim` of the U-Net is set from diffusion_img_size, following the 3D
+# repo's convention -- it is really the base channel width.
+diffusion_img_size: ???
+diffusion_num_channels: ???
+dim_mults: ???
+# Base channel width of the U-Net. Left null it follows the 3D repo and takes
+# the value of diffusion_img_size. Set it explicitly if you use a non-square
+# latent (then diffusion_img_size is a [h, w] pair and cannot double as a width).
+unet_dim: null
+
+results_folder: D:/Thesis/MOCO-CDDPM-2D/checkpoints/ddpm_2d/
+results_folder_postfix: ''
+load_milestone: False
+
+denoising_fn: Unet2D        # Unet2D | UNet (MONAI)
+batch_size: 16
+num_workers: 4
+logger: none
+
+# --- diffusion ------------------------------------------------------------ #
+timesteps: 500
+# DDIM: used whenever sampling_timesteps < timesteps. The 3D repo configured
+# this but never wired it up; in 2D you denoise every slice, so it matters.
+sampling_timesteps: 250
+ddim_sampling_eta: 0.0
+beta_schedule: cosine
+# The 3D config said pred_x0 but the code always trained epsilon-prediction.
+# pred_noise reproduces what the 3D model actually did.
+objective: pred_noise
+loss_type: l1               # robust against the heavy-tailed Rician residuals
+
+# LOW-FIELD: Min-SNR-gamma loss weighting. Leave null to reproduce the 3D
+# behaviour exactly; 5.0 is the usual value and helps on small cohorts.
+min_snr_gamma: null
+
+# --- conditioning --------------------------------------------------------- #
+cond_mode: gated            # gated (3D behaviour) | concat | both
+cond_gate_init: 0.1
+# Train a null condition so classifier-free guidance becomes usable.
+# 0.0 = no CFG (3D behaviour); 0.1 with cond_scale ~1.5-2.0 is a good trial.
+cond_drop_prob: 0.0
+cond_scale: 1.0
+# Replaces the temporal attention the 3D U-Net used to locate a slice.
+use_slice_pos_emb: true
+
+# --- optimisation --------------------------------------------------------- #
+train_lr: 1e-4
+train_num_steps: 300000
+gradient_accumulate_every: 1
+ema_decay: 0.995
+amp: True
+max_grad_norm: 1.0
+save_and_sample_every: 1000
+num_sample_rows: 1
+num_eval_samples: 4          # slices denoised for each milestone preview
+gpus: 0

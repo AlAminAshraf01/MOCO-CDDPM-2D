@@ -1,0 +1,55 @@
+seed: 1234
+
+# 2D slices are ~two orders of magnitude cheaper than 160x160x64 volumes, so
+# the batch size and network width can both go up considerably.
+batch_size: 16
+num_workers: 4
+
+gpus: 1
+accumulate_grad_batches: 1
+default_root_dir: D:\Thesis\MOCO-CDDPM-2D\checkpoints\vq_gan_2d
+default_root_dir_postfix: ''
+resume_from_checkpoint:
+max_steps: -1
+max_epochs: -1
+precision: 16
+gradient_clip_val: 1.0
+adam_capturable: false     # the 3D repo forced this on; it only slows Adam down
+
+# --- latent space --------------------------------------------------------- #
+# downsample is [h, w] for the 2D model. 256 / 4 = 64 -> diffusion_img_size 64.
+downsample: [4, 4]
+embedding_dim: 8           # -> diffusion_num_channels
+n_hiddens: 64              # 3D used 16 purely for memory reasons
+num_groups: 8
+# LOW-FIELD: a smaller codebook than the 3D run (16384). Low-field cohorts are
+# small and a huge codebook simply goes unused -- watch train/perplexity and
+# raise this only if perplexity saturates near n_codes.
+n_codes: 8192
+restart_thres: 1.0
+no_random_restart: False
+norm_type: group
+padding_type: replicate
+
+lr: 3e-4
+
+# --- losses --------------------------------------------------------------- #
+l1_weight: 4.0
+# LOW-FIELD: LPIPS is a natural-image texture prior. At low field there is very
+# little true high-frequency content, and a large perceptual weight makes the
+# decoder invent texture. 4.0 (the 3D value) is too aggressive here.
+perceptual_weight: 1.0
+image_gan_weight: 1.0
+gan_feat_weight: 4.0
+disc_channels: 64
+disc_layers: 3
+# LOW-FIELD: start the discriminator late. 2D gives many more steps per epoch,
+# and an early adversarial signal on noisy data hallucinates structure.
+discriminator_iter_start: 20000
+disc_loss_type: hinge
+
+# LOW-FIELD: down-weight background pixels in the L1 term so the codebook is
+# not spent on the Rician noise floor. 1.0 = plain L1 (3D behaviour);
+# 0.25 is a good starting point for 64 mT / 0.3 T data.
+background_weight: 0.25
+foreground_threshold: -0.8

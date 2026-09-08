@@ -1,0 +1,45 @@
+name: DEFAULT
+root_dir: D:\Thesis\data\cddpm_2d_training
+image_channels: 1
+
+# --- pairing -------------------------------------------------------------- #
+use_paired: false
+target_subdir: target
+condition_subdir: corrupted
+
+# --- split (done on FILES, never on slices) ------------------------------- #
+enable_split: false
+val_fraction: 0.1
+split_seed: 42
+
+# --- 2D preprocessing ----------------------------------------------------- #
+# In-plane matrix after crop/pad. M4Raw is 256x256; 64 mT Hyperfine volumes are
+# typically ~200-256 in plane, so 256 keeps everything without upsampling.
+target_shape: [256, 256]
+# Slice axis of the NIfTI volume (2 = last spatial axis = axial for RAS data).
+slice_axis: 2
+
+# LOW-FIELD: percentile scaling instead of global min/max. At 64 mT / 0.3 T a
+# single hot voxel would otherwise squash the brain into a fraction of [-1, 1].
+percentiles: [0.5, 99.5]
+# 'volume' keeps slices of one scan mutually consistent; 'slice' normalises
+# each slice on its own (use only if your slices come from unrelated scans).
+norm_scope: volume
+# Pad air with -1 (background), not 0 (mid-grey) as the 3D pipeline did.
+pad_value: -1.0
+
+# LOW-FIELD: drop end slices that are essentially pure Rician noise.
+# 0.0 disables the check; 0.02-0.05 is a sensible range for brain stacks.
+min_foreground_fraction: 0.02
+# Alternatively/additionally keep only a central fraction of each stack.
+slice_range: [0.0, 1.0]
+
+# --- augmentation (identical geometry is applied to target and condition) -- #
+flip_lr_prob: 0.5
+max_rotation_deg: 10.0
+max_translation_frac: 0.03
+scale_range: [0.97, 1.03]
+# LOW-FIELD: extra Rician noise on the CONDITION only. Enable (e.g. 0.02 / 0.3)
+# if test-time SNR may be lower than training SNR.
+cond_noise_std: 0.0
+cond_noise_prob: 0.0

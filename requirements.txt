@@ -1,0 +1,32 @@
+# Kept compatible with the 3D repo's environment (torch 1.12 / PL 1.6.4) so the
+# same virtualenv works for both. Dropped relative to the 3D requirements:
+#   rotary-embedding-torch  (only used by the removed temporal attention)
+#   torchio, SimpleITK      (the 2D pipeline reads NIfTI with nibabel directly)
+#   scikit-video, imageio-ffmpeg  (no more GIF/MP4 logging)
+torch==1.12.0
+torchvision==0.13.0
+pytorch-lightning==1.6.4
+torchmetrics==0.9.1
+monai==1.5.0
+
+hydra-core==1.2.0
+omegaconf==2.2.3
+einops==0.4.1
+einops-exts==0.0.3
+ema-pytorch==0.0.8
+
+nibabel==4.0.1
+numpy==1.23.0
+scipy==1.8.1
+scikit-image==0.19.3
+imageio==2.19.3
+Pillow==9.1.1
+matplotlib==3.5.2
+pandas==1.4.3
+tqdm==4.64.0
+requests==2.28.0
+PyYAML==6.0
+tensorboard==2.9.1
+
+# optional: only needed for evaluation/evaluate_2d.py --lpips
+# lpips

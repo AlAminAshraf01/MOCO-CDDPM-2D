@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Model weights / checkpoints (never commit these - they are huge)
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+outputs/
+lightning_logs/
+
+# Data
+*.nii
+*.nii.gz
+*.npy
+*.h5
+*.zip
+*.tar.gz
+data/
+
+# Run artefacts
+*.csv
+*.png
+*.jpg
+sampling_metrics.csv
+.moco2d_index_*.json
+
+# Hydra / editors
+.hydra/
+multirun/
+.vscode/
+.idea/
+.DS_Store
